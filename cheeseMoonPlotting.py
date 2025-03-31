@@ -36,7 +36,7 @@ shape = temps.shape
 # y = r * np.sin(P) * np.sin(T)
 # z = r * np.cos(P)
 
-colour_map = mpl.colormaps['RdYlBu'] # Red to yellow to blue colour map
+colour_map = mpl.colormaps['RdYlBu_r'] # Red to yellow to blue colour map
 
 perf_temp = 25 # chosen temperature for the cheese
 
@@ -52,7 +52,7 @@ colours = colour_map(norm(temps))
 # Plotting moon
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-surface = ax.plot_surface(x, y, z, norm=norm, edgecolor='k', linewidth=0.5, cmap=colour_map, facecolors=colours)
+surface = ax.plot_surface(x, y, z, norm=norm, edgecolor=None, linewidth=0.5, cmap=colour_map, facecolors=colours)
 ax.set_axis_off()
 # Adding colourbar
 cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=colour_map), ax=ax)
