@@ -60,6 +60,7 @@ for t in range(N_time):
                 #1D laplacian
                 if l==0:
                     laplacian_T = (0 + T[1, i, j] - 2*T[l, i, j]) / dr**2
+                    # print(laplacian_T*alpha*dt)
                 elif l == N_lay-1:
                     laplacian_T = (T[l-1, i, j] + T[l, i, j] - 2*T[l, i, j]) / dr**2
                 else:
@@ -69,16 +70,16 @@ for t in range(N_time):
                 # print(laplacian_T)
                 # Solar heating (day side approximation)
                 if l == 0:
-                    sol_wave = np.cos(rot_freq * t * dt)
-                    if sol_wave > 0:  # Rough east/west division for sunlit side
+                    sol_wave = np.cos(rot_freq * t * dt + Th[i,j])
+                    if sol_wave > 0: # Only consider day side
                         S = S_max * np.sin(Ph[i, j]) * sol_wave  # solar flux
                     # print(S)
                     # print(Ph[i, j])
                         T_new[l, i, j] += (S * dt) / (rho * Cp * thickness)  # Heat absorbed
-                        print(S * dt / (rho * Cp * thickness))
+                        # print(S * dt / (rho * Cp * thickness))
                     # Radiative cooling (Stefan-Boltzmann law)
                     T_new[l, i, j] -= emissivity * sigma * T[l, i, j]**4 * dt / (rho * Cp * thickness)
-                    print(emissivity * sigma * T[l, i, j]**4 * dt / (rho * Cp * thickness))
+                    # print(emissivity * sigma * T[l, i, j]**4 * dt / (rho * Cp * thickness))
                 T_new[l, i, j] = max(min(T_new[l, i, j], 500), -100)  # Keep within realistic lunar temperature limits
     
     # print(T_new[1, 1])
