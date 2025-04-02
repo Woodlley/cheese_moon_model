@@ -10,19 +10,19 @@ k = 9.3e-3       # Thermal conductivity (W/m.K)
 alpha = k / (rho * Cp)  # Thermal diffusivity
 day_length = 27.3 * 24 * 3600  # Length of lunar day (s)
 rot_freq = 2 * np.pi / day_length  # Angular frequency of lunar rotation
-thickness = 1  # Thickness of the model (m)
+dr = 0.04  # Layer thickness
 
 # Define grid resolution
-N_lay = 10  # Number of layers
-N_lat = 25  # Latitude divisions
-N_lon = 50  # Longitude divisions
-N_days = 5  # Number of moon days
+N_lay = 20  # Number of layers
+N_lat = 50  # Latitude divisions
+N_lon = 100  # Longitude divisions
+N_days = 20  # Number of moon days
 N_time = N_days * 240  # number of times steps
 dt = 2.73 * 3600  # Time step (s) 1/240 moon days
 # dt = day_length / 200  # Time step (sec)
 # print(dt)
 dx = R_moon * np.pi / N_lat  # Grid spacing
-dr = thickness / N_lay  # Layer thickness
+thickness = N_lay * dr # Thickness of the model (m)
 
 # dt_max = dx**2 / (4 * alpha)
 # print(f"Recommended max dt: {dt_max}")
@@ -38,9 +38,9 @@ Th, Ph = np.meshgrid(theta, phi) # returns shape (len(phi), len(theta))
 # print(Ph)
 # Initialize temperature array
 T = 250 * np.ones_like(Th)  # Initial temperature (K)
-# T = np.stack([T] * (N_lay-1), axis=0)  # Stack layers
-surf_T = 100 * np.cos(Th) * np.sin(Ph) + 250  # Surface temperature (K)
-T = np.stack((surf_T, T, T, T, T, T, T, T, T, T), axis=0)  # Add surface layer
+T = np.repeat(T[np.newaxis, :, :], N_lay - 1, axis=0)
+surf_T = 100 * np.sin(Th) * np.sin(Ph) + 250  # Surface temperature (K)
+T = np.concatenate((surf_T[np.newaxis, :, :], T), axis=0)  # Add surface layer
 # print(T[-1])
 # Define solar flux (simplified)
 S_max = 1360.9  # Solar radiation at 1 AU (W/m^2)
@@ -59,7 +59,8 @@ for t in range(N_time):
             for j in range(0, N_lon):
                 #1D laplacian
                 if l==0:
-                    laplacian_T = (0 + T[1, i, j] - 2*T[l, i, j]) / dr**2
+                    laplacian_T = (T[1, i, j] - T[l, i, j]) / dr**2 # no conductivity with vacuum
+                      #T[1, i, j]
                     # print(laplacian_T*alpha*dt)
                 elif l == N_lay-1:
                     laplacian_T = (T[l-1, i, j] + T[l, i, j] - 2*T[l, i, j]) / dr**2
@@ -70,17 +71,17 @@ for t in range(N_time):
                 # print(laplacian_T)
                 # Solar heating (day side approximation)
                 if l == 0:
-                    sol_wave = np.cos(rot_freq * t * dt + Th[i,j])
+                    sol_wave = np.sin(rot_freq * t * dt + Th[i,j])
                     if sol_wave > 0: # Only consider day side
                         S = S_max * np.sin(Ph[i, j]) * sol_wave  # solar flux
                     # print(S)
                     # print(Ph[i, j])
-                        T_new[l, i, j] += (S * dt) / (rho * Cp * thickness)  # Heat absorbed
+                        T_new[l, i, j] += (S * dt) / (rho * Cp * dr)  # Heat absorbed
                         # print(S * dt / (rho * Cp * thickness))
                     # Radiative cooling (Stefan-Boltzmann law)
-                    T_new[l, i, j] -= emissivity * sigma * T[l, i, j]**4 * dt / (rho * Cp * thickness)
+                    T_new[l, i, j] -= emissivity * sigma * T[l, i, j]**4 * dt / (rho * Cp * dr)
                     # print(emissivity * sigma * T[l, i, j]**4 * dt / (rho * Cp * thickness))
-                T_new[l, i, j] = max(min(T_new[l, i, j], 500), -100)  # Keep within realistic lunar temperature limits
+                T_new[l, i, j] = max(min(T_new[l, i, j], 500), 0)  # Keep within realistic lunar temperature limits
     
     # print(T_new[1, 1])
     if t != 0:
@@ -96,7 +97,7 @@ for t in range(N_time):
 # Plot results
 temps = T[0, :, :] - 273  # Surface temperature (^oC)
 shape = temps.shape
-min_temp = temps.min()
+min_temp = temps[:-1, :].min()
 max_temp = temps.max()
 
 # Use below to make sphere same shape as temps, 
@@ -127,7 +128,9 @@ elif min_temp < 0:
 
 colours = colour_map(norm(temps))
 
-
+plt.imshow(temps, cmap=colour_map, interpolation='nearest', origin='lower', extent=[0, 2*np.pi, 0, np.pi])
+plt.colorbar(label='Temperature (°C)')
+plt.savefig('moon_temp.png', dpi=600, transparent=True)
 # Plotting moon
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
@@ -147,7 +150,7 @@ elif min_temp < 0:
 
 ax.set_title('{:.3f} $pi$ resolution'.format(1 / shape[0]))
 ax.set_box_aspect((1, 1, 1)) # to be regular sphere
-ax.view_init(30, 0, 0) # Change viewing angle https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.mplot3d.axes3d.Axes3D.view_init.html#mpl_toolkits.mplot3d.axes3d.Axes3D.view_init
+ax.view_init(30, 55, 0) # Change viewing angle https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.mplot3d.axes3d.Axes3D.view_init.html#mpl_toolkits.mplot3d.axes3d.Axes3D.view_init
 plt.savefig('moon.png', dpi=600, transparent=True)
 plt.show()
 
