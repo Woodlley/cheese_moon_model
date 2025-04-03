@@ -84,6 +84,7 @@ ax1.spines[["left", "bottom"]].set_position(("data", 0)) # Puts x axis at y=0, c
 ax1.spines[["top", "right"]].set_visible(False)
 ax1.set_ylabel('Temperature (°C)')
 ax1.set_xlabel('Longitude ($\pi$ radians)')
+ax1.set_title('Temperature around the equator')
 plt.savefig('cheeseMoon_eq.png', dpi=600, transparent=True)
 plt.show()
 
@@ -95,7 +96,7 @@ ax2 = fig2.add_subplot(111)
 ax2.plot(theta/np.pi, temps[row_index], c='k')
 ax2.fill_between(theta/np.pi, temps[row_index], 20, where=(temps[row_index] >= 20), color='k', alpha=0.2)
 ax2.fill_between(theta/np.pi, temps[row_index], 30, where=((temps[row_index] <= 30) & (temps[row_index] >= 20)), color='k', alpha=0.2)
-ax2.set_title('Latitude with longest time around {:.0f}°C. Latitude = {:.2f}$\pi$'.format(perf_temp, (0.5 + row_index)/shape[0]))
+ax2.set_title('Latitude with longest time around {:.0f}°C. Latitude = {:.2f}$\pi$'.format(perf_temp, (0.5 + row_index - 25)/shape[0]))
 # plt.fill_between([0, 2], 20, 30, color='k', alpha=0.2, label='Error Band')
 ax2.spines[["left", "bottom"]].set_position(("data", 0)) # Puts x axis at y=0, can remove
 ax2.spines[["top", "right"]].set_visible(False)
