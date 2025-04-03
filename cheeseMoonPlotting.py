@@ -103,6 +103,8 @@ def max_consecutive_in_range(row, lower, upper):
     # Handle the case where the last streak ends at the end of the array
     return max(max_consecutive, current_consecutive)
 
+time = theta * 29.53 * 24 / (2 * np.pi) # Time in hours
+
 error = 15 # Error band
 counts = [max_consecutive_in_range(row, perf_temp - error, perf_temp + error) for row in temps] # Count number of temps around perf_temp
 print(counts)
@@ -110,14 +112,14 @@ row_index = np.argmax(counts) # Find row with most temps around perf_temp
 print(row_index)
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(111)
-ax2.plot(theta/np.pi, temps[row_index], c='k')
-ax2.fill_between(theta/np.pi, temps[row_index], perf_temp - error, where=((temps[row_index] <= perf_temp + error) & (temps[row_index] >=perf_temp - error)), color='k', alpha=0.2)
-ax2.fill_between(theta/np.pi, temps[row_index], perf_temp + error, where=((temps[row_index] <= perf_temp + error) & (temps[row_index] >= perf_temp - error)), color='k', alpha=0.2)
+ax2.plot(time, temps[row_index], c='k')
+ax2.fill_between(time, temps[row_index], perf_temp - error, where=((temps[row_index] <= perf_temp + error) & (temps[row_index] >=perf_temp - error)), color='k', alpha=0.2)
+ax2.fill_between(time, temps[row_index], perf_temp + error, where=((temps[row_index] <= perf_temp + error) & (temps[row_index] >= perf_temp - error)), color='k', alpha=0.2)
 ax2.set_title('Latitude with longest time around {:.0f}°C. Latitude = {:.2f}$\pi$'.format(perf_temp, (0.5 + row_index)/shape[0] - 0.5))
 # plt.fill_between([0, 2], 20, 30, color='k', alpha=0.2, label='Error Band')
 ax2.spines[["left", "bottom"]].set_position(("data", 0)) # Puts x axis at y=0, can remove
 ax2.spines[["top", "right"]].set_visible(False)
 ax2.set_ylabel('Temperature (°C)')
-ax2.set_xlabel('Longitude ($\pi$ radians)')
+ax2.set_xlabel('Time (hrs)')
 plt.savefig('cheeseMoon_row.png', dpi=600, transparent=True)
 plt.show()

@@ -17,7 +17,7 @@ Cp = 2444         # Specific heat (J/kg.K)
 k = 0.354      # Thermal conductivity (W/m.K)
 alpha = k / (rho * Cp)  # Thermal diffusivity
 
-day_length = 27.3 * 24 * 3600  # Length of lunar day (s)
+day_length = 29.53 * 24 * 3600  # Length of lunar day (s)
 rot_freq = 2 * np.pi / day_length  # Angular frequency of lunar rotation
 dr = 0.1  # Layer thickness
 
@@ -27,7 +27,7 @@ N_lat = 51  # Latitude divisions
 N_lon = 100  # Longitude divisions
 N_days = 160  # Number of moon days
 N_time = (N_days * 240) + 1   # number of times steps
-dt = 2.73 * 3600  # Time step (s) 1/240 moon days
+dt = 2.953 * 3600  # Time step (s) 1/240 moon days
 # dt = day_length / 200  # Time step (sec)
 # print(dt)
 dx = R_moon * np.pi / N_lat  # Grid spacing
@@ -115,7 +115,7 @@ for t in range(N_time):
     T = T_new.copy()
 # print(T)
 # Plot results
-temps = T[0, :, :] - 273  # Surface temperature (^oC)
+temps = T[0, :, :] - 273.15  # Surface temperature (^oC)
 shape = temps.shape
 min_temp = temps[:-1, :].min()
 max_temp = temps.max()
