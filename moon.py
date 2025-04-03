@@ -23,7 +23,7 @@ dr = 0.1  # Layer thickness
 
 # Define grid resolution
 N_lay = 10  # Number of layers
-N_lat = 50  # Latitude divisions
+N_lat = 51  # Latitude divisions
 N_lon = 100  # Longitude divisions
 N_days = 160  # Number of moon days
 N_time = (N_days * 240) + 1   # number of times steps

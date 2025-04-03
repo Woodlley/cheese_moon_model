@@ -38,7 +38,7 @@ z = r * np.cos(P)
 
 colour_map = mpl.colormaps['RdYlBu_r'] # Red to yellow to blue colour map
 
-perf_temp = 25 # chosen temperature for the cheese
+perf_temp = 20 # chosen temperature for the cheese
 
 # Sets colour map to centre on perf_temp
 if np.abs(perf_temp-max_temp) >= np.abs(perf_temp-min_temp):
@@ -88,15 +88,32 @@ ax1.set_title('Temperature around the equator')
 plt.savefig('cheeseMoon_eq.png', dpi=600, transparent=True)
 plt.show()
 
-counts = np.sum((temps >= perf_temp - 5) & (temps <= perf_temp + 5), axis=1) # Count number of temps around perf_temp
+def max_consecutive_in_range(row, lower, upper):
+    # Create a boolean mask for values in the range
+    mask = (row >= lower) & (row <= upper)
+    # Find the maximum length of consecutive True values
+    max_consecutive = 0
+    current_consecutive = 0
+    for value in mask:
+        if value:
+            current_consecutive += 1
+        else:
+            max_consecutive = max(max_consecutive, current_consecutive)
+            current_consecutive = 0
+    # Handle the case where the last streak ends at the end of the array
+    return max(max_consecutive, current_consecutive)
+
+error = 15 # Error band
+counts = [max_consecutive_in_range(row, perf_temp - error, perf_temp + error) for row in temps] # Count number of temps around perf_temp
+print(counts)
 row_index = np.argmax(counts) # Find row with most temps around perf_temp
 print(row_index)
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(111)
 ax2.plot(theta/np.pi, temps[row_index], c='k')
-ax2.fill_between(theta/np.pi, temps[row_index], 20, where=(temps[row_index] >= 20), color='k', alpha=0.2)
-ax2.fill_between(theta/np.pi, temps[row_index], 30, where=((temps[row_index] <= 30) & (temps[row_index] >= 20)), color='k', alpha=0.2)
-ax2.set_title('Latitude with longest time around {:.0f}°C. Latitude = {:.2f}$\pi$'.format(perf_temp, (0.5 + row_index - 25)/shape[0]))
+ax2.fill_between(theta/np.pi, temps[row_index], perf_temp - error, where=((temps[row_index] <= perf_temp + error) & (temps[row_index] >=perf_temp - error)), color='k', alpha=0.2)
+ax2.fill_between(theta/np.pi, temps[row_index], perf_temp + error, where=((temps[row_index] <= perf_temp + error) & (temps[row_index] >= perf_temp - error)), color='k', alpha=0.2)
+ax2.set_title('Latitude with longest time around {:.0f}°C. Latitude = {:.2f}$\pi$'.format(perf_temp, (0.5 + row_index)/shape[0] - 0.5))
 # plt.fill_between([0, 2], 20, 30, color='k', alpha=0.2, label='Error Band')
 ax2.spines[["left", "bottom"]].set_position(("data", 0)) # Puts x axis at y=0, can remove
 ax2.spines[["top", "right"]].set_visible(False)
