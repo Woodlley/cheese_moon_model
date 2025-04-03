@@ -2,22 +2,31 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-# Define Moon parameters
-R_moon = 1737e3  # Radius of the Moon (m)
-rho = 1800       # Density (kg/m^3)
-Cp = 840         # Specific heat (J/kg.K)
-k = 9.3e-3       # Thermal conductivity (W/m.K)
+# # Define Moon parameters
+# R_moon = 1737e3  # Radius of the Moon (m)
+# rho = 1800       # Density (kg/m^3)
+# Cp = 840        # Specific heat (J/kg.K)
+# k = 9.3e-3       # Thermal conductivity (W/m.K)
+# alpha = k / (rho * Cp)  # Thermal diffusivity
+
+# Cheese parameters
+mass = 7.346e22  # Mass of moon (kg)
+rho = 1120        # Density (kg/m^3)
+R_moon = np.cbrt((3 * mass)/(4*rho*np.pi))  # Radius of the Moon (m)
+Cp = 2444         # Specific heat (J/kg.K)
+k = 0.354      # Thermal conductivity (W/m.K)
 alpha = k / (rho * Cp)  # Thermal diffusivity
+
 day_length = 27.3 * 24 * 3600  # Length of lunar day (s)
 rot_freq = 2 * np.pi / day_length  # Angular frequency of lunar rotation
-dr = 0.04  # Layer thickness
+dr = 0.05  # Layer thickness
 
 # Define grid resolution
-N_lay = 20  # Number of layers
+N_lay = 10  # Number of layers
 N_lat = 50  # Latitude divisions
 N_lon = 100  # Longitude divisions
-N_days = 20  # Number of moon days
-N_time = N_days * 240  # number of times steps
+N_days = 5  # Number of moon days
+N_time = (N_days * 240) + 1   # number of times steps
 dt = 2.73 * 3600  # Time step (s) 1/240 moon days
 # dt = day_length / 200  # Time step (sec)
 # print(dt)
@@ -86,9 +95,15 @@ for t in range(N_time):
     # print(T_new[1, 1])
     if t != 0:
         if t % 240 == 0:
-            print(T_new[0, 12, 25])
+            print(T_new[0, :, :].max())
+            print(T_new[0, :, :].min())
             print(np.abs(T_new[:, 12, :] - T_day[:, 12, :]).max())
             if np.all(np.abs(T_new[:, 12, :] - T_day[:, 12, :]) < 1):
+                T = T_new.copy()
+                break
+            if np.any(T_new[0, :-1, :] == 0) or np.any(T_new[0, :, :] == 500):
+                print("Temperature out of bounds")
+                # T = T_day.copy()
                 T = T_new.copy()
                 break
             T_day = T_new.copy()
@@ -97,7 +112,7 @@ for t in range(N_time):
 # Plot results
 temps = T[0, :, :] - 273  # Surface temperature (^oC)
 shape = temps.shape
-min_temp = temps[:-1, :].min()
+min_temp = temps[:, :].min()
 max_temp = temps.max()
 
 # Use below to make sphere same shape as temps, 
@@ -130,7 +145,7 @@ colours = colour_map(norm(temps))
 
 plt.imshow(temps, cmap=colour_map, interpolation='nearest', origin='lower', extent=[0, 2*np.pi, 0, np.pi])
 plt.colorbar(label='Temperature (°C)')
-plt.savefig('moon_temp.png', dpi=600, transparent=True)
+plt.savefig('cheeseMoon_temp.png', dpi=600, transparent=True)
 # Plotting moon
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
@@ -148,10 +163,10 @@ elif min_temp < 0:
 # Indices have to match
 
 
-ax.set_title('{:.3f} $pi$ resolution'.format(1 / shape[0]))
+ax.set_title('{:.2f} $\pi$ resolution'.format(1 / shape[0]))
 ax.set_box_aspect((1, 1, 1)) # to be regular sphere
 ax.view_init(30, 55, 0) # Change viewing angle https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.mplot3d.axes3d.Axes3D.view_init.html#mpl_toolkits.mplot3d.axes3d.Axes3D.view_init
-plt.savefig('moon.png', dpi=600, transparent=True)
+plt.savefig('cheeseMoon.png', dpi=600, transparent=True)
 plt.show()
 
 eq_index = shape[0] // 2 # Find equator index of temps
@@ -162,6 +177,6 @@ ax1 = fig1.add_subplot(111)
 ax1.plot(theta/np.pi, temps[eq_index], c='k')
 ax1.spines[["left", "bottom"]].set_position(("data", 0)) # Puts x axis at y=0, can remove
 ax1.spines[["top", "right"]].set_visible(False)
-plt.savefig('moon_eq.png', dpi=600, transparent=True)
+plt.savefig('cheeseMoon_eq.png', dpi=600, transparent=True)
 plt.show()
 
