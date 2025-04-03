@@ -19,13 +19,13 @@ alpha = k / (rho * Cp)  # Thermal diffusivity
 
 day_length = 27.3 * 24 * 3600  # Length of lunar day (s)
 rot_freq = 2 * np.pi / day_length  # Angular frequency of lunar rotation
-dr = 0.05  # Layer thickness
+dr = 0.1  # Layer thickness
 
 # Define grid resolution
 N_lay = 10  # Number of layers
 N_lat = 50  # Latitude divisions
 N_lon = 100  # Longitude divisions
-N_days = 5  # Number of moon days
+N_days = 160  # Number of moon days
 N_time = (N_days * 240) + 1   # number of times steps
 dt = 2.73 * 3600  # Time step (s) 1/240 moon days
 # dt = day_length / 200  # Time step (sec)
@@ -70,7 +70,9 @@ for t in range(N_time):
                 if l==0:
                     laplacian_T = (T[1, i, j] - T[l, i, j]) / dr**2 # no conductivity with vacuum
                       #T[1, i, j]
-                    # print(laplacian_T*alpha*dt)
+                    # print()
+                    # if j == 49 and t % 240 == 0:
+                    #     print(laplacian_T*alpha*dt)
                 elif l == N_lay-1:
                     laplacian_T = (T[l-1, i, j] + T[l, i, j] - 2*T[l, i, j]) / dr**2
                 else:
@@ -88,7 +90,10 @@ for t in range(N_time):
                         T_new[l, i, j] += (S * dt) / (rho * Cp * dr)  # Heat absorbed
                         # print(S * dt / (rho * Cp * thickness))
                     # Radiative cooling (Stefan-Boltzmann law)
-                    T_new[l, i, j] -= emissivity * sigma * T[l, i, j]**4 * dt / (rho * Cp * dr)
+                    emission = emissivity * sigma * T[l, i, j]**4 * dt / (rho * Cp * dr)
+                    T_new[l, i, j] -= emission
+                    if j == 49 and t % 240 == 0:
+                        print(emission)
                     # print(emissivity * sigma * T[l, i, j]**4 * dt / (rho * Cp * thickness))
                 T_new[l, i, j] = max(min(T_new[l, i, j], 500), 0)  # Keep within realistic lunar temperature limits
     
@@ -98,7 +103,7 @@ for t in range(N_time):
             print(T_new[0, :, :].max())
             print(T_new[0, :, :].min())
             print(np.abs(T_new[:, 12, :] - T_day[:, 12, :]).max())
-            if np.all(np.abs(T_new[:, 12, :] - T_day[:, 12, :]) < 1):
+            if np.all(np.abs(T_new[:, 12, :] - T_day[:, 12, :]) < 0.1):
                 T = T_new.copy()
                 break
             if np.any(T_new[0, :-1, :] == 0) or np.any(T_new[0, :, :] == 500):
@@ -112,7 +117,7 @@ for t in range(N_time):
 # Plot results
 temps = T[0, :, :] - 273  # Surface temperature (^oC)
 shape = temps.shape
-min_temp = temps[:, :].min()
+min_temp = temps[:-1, :].min()
 max_temp = temps.max()
 
 # Use below to make sphere same shape as temps, 
@@ -180,3 +185,26 @@ ax1.spines[["top", "right"]].set_visible(False)
 plt.savefig('cheeseMoon_eq.png', dpi=600, transparent=True)
 plt.show()
 
+fig1 = plt.figure()
+ax1 = fig1.add_subplot(111)
+ax1.plot(theta/np.pi, temps[12], c='k')
+ax1.spines[["left", "bottom"]].set_position(("data", 0)) # Puts x axis at y=0, can remove
+ax1.spines[["top", "right"]].set_visible(False)
+plt.savefig('cheeseMoon_N.png', dpi=600, transparent=True)
+plt.show()
+
+fig1 = plt.figure()
+ax1 = fig1.add_subplot(111)
+ax1.plot(theta/np.pi, temps[37], c='k')
+ax1.spines[["left", "bottom"]].set_position(("data", 0)) # Puts x axis at y=0, can remove
+ax1.spines[["top", "right"]].set_visible(False)
+plt.savefig('cheeseMoon_S.png', dpi=600, transparent=True)
+plt.show()
+
+fig1 = plt.figure()
+ax1 = fig1.add_subplot(111)
+ax1.plot(phi/np.pi, temps[:, 24], c='k')
+ax1.spines[["left", "bottom"]].set_position(("data", 0)) # Puts x axis at y=0, can remove
+ax1.spines[["top", "right"]].set_visible(False)
+plt.savefig('cheeseMoon_NS.png', dpi=600, transparent=True)
+plt.show()
