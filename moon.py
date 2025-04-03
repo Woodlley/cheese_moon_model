@@ -120,11 +120,14 @@ shape = temps.shape
 min_temp = temps[:-1, :].min()
 max_temp = temps.max()
 
+np.savetxt('temps.txt', temps, delimiter=',')
+
 # Use below to make sphere same shape as temps, 
 # Assuming axis 0 is phi (0 -> pi)
 # axis 1 is theta (0 -> 2pi)
 # If not, swap 0 & 1 below and the creation of x & y
 
+""""
 # # sphere
 phi = np.linspace(0, np.pi, shape[0])
 theta = np.linspace(0, 2*np.pi, shape[1])
@@ -208,3 +211,5 @@ ax1.spines[["left", "bottom"]].set_position(("data", 0)) # Puts x axis at y=0, c
 ax1.spines[["top", "right"]].set_visible(False)
 plt.savefig('cheeseMoon_NS.png', dpi=600, transparent=True)
 plt.show()
+
+"""
