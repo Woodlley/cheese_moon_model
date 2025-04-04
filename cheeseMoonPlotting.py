@@ -115,7 +115,7 @@ ax2 = fig2.add_subplot(111)
 ax2.plot(time, temps[row_index], c='k')
 ax2.fill_between(time, temps[row_index], perf_temp - error, where=((temps[row_index] <= perf_temp + error) & (temps[row_index] >=perf_temp - error)), color='k', alpha=0.2)
 ax2.fill_between(time, temps[row_index], perf_temp + error, where=((temps[row_index] <= perf_temp + error) & (temps[row_index] >= perf_temp - error)), color='k', alpha=0.2)
-ax2.set_title('Latitude with longest time around {:.0f}°C. Latitude = {:.2f}$\pi$'.format(perf_temp, (0.5 + row_index)/shape[0] - 0.5))
+ax2.set_title('Latitude with longest time around {:.0f}°C. Latitude = {:.2f}$^o$'.format(perf_temp, (0.5 + row_index) * 180/shape[0] - 90))
 # plt.fill_between([0, 2], 20, 30, color='k', alpha=0.2, label='Error Band')
 ax2.spines[["left", "bottom"]].set_position(("data", 0)) # Puts x axis at y=0, can remove
 ax2.spines[["top", "right"]].set_visible(False)
